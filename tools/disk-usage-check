@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# DiskUsageCheck
+
+validate_arguments() {
+    if [ "$#" -ne 2 ]; then
+        echo "Usage: $0 <directory> <max_size_kb>"
+        exit 1
+    fi
+}
+
+check_directory() {
+    if [ ! -d "$1" ]; then
+        echo "Error: '$1' is not a valid directory"
+        exit 1
+    fi
+}
+
+get_directory_size() {
+    DIR_SIZE=$(du -s "$1" | awk '{print $1}')
+}
+
+compare_size() {
+    MAX_SIZE="$2"
+
+    if [ "$DIR_SIZE" -le "$MAX_SIZE" ]; then
+        echo "OK: Directory size (${DIR_SIZE} KB) is within the allowed limit (${MAX_SIZE} KB)"
+        exit 0
+    else
+        echo "ERROR: Directory size (${DIR_SIZE} KB) exceeds the allowed limit (${MAX_SIZE} KB)"
+        exit 1
+    fi
+}
+
+main() {
+    validate_arguments "$@"
+    check_directory "$1"
+    get_directory_size "$1"
+    compare_size "$@"
+}
+
+main "$@"

@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# LogRotateCheck
+
+# Variables
+
+LOG_FILE="$HOME/logrotate-check.log"
+SIZE_LIMIT_MB=50
+
+# Functions
+
+validate_arguments() {
+    if [ "$#" -ne 1 ];then
+        echo "Usage: $0 log_directory"
+        exit 1
+    fi
+}
+
+check_log_directory() {
+    if [ ! -d "$1" ]; then
+        echo "ERROR: directory '$1' does not exists"
+        echo "$(date '+%Y-%m-%d %H:%M:%S') ERROR: directory '$1' does not exist" >> "$LOG_FILE"
+        exit 1
+    fi
+}
+
+find_large_logs() {
+    local log_dir="$1"
+
+    find "$log_dir" -type f -name "*.log" -size +"$SIZE_LIMIT_MB"M 2>/dev/null | while read -r logfile; do
+        echo "WARNING: large log file detected: $logfile"
+        log_warning "$logfile"
+    done
+}
+
+check_logrotate_config() {
+    if ! command -v logrotate > /dev/null 2>&1; then
+        echo "WARNING: logrotate is not installed"
+        echo "$(date '+%Y-%m-%d %H:%M:%S') WARNING: logrotate is not installed" >> "$LOG_FILE"
+        return 1
+    fi
+
+    if [ ! -f "/etc/logrotate.conf" ]; then
+        echo "WARNING: logrotate configuration file not found"
+        echo "$(date '+%Y-%m-%d %H:%M:%S') WARNING: /etc/logrotate.conf not found" >> "$LOG_FILE"
+        return 1
+    fi
+
+    echo "Logrotate configuration detected"
+}
+
+log_warning() {
+    local logfile="$1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') WARNING: large log file detected: $logfile" >> "$LOG_FILE"
+}
+
+# Main
+
+main() {
+    validate_arguments "$@"
+    check_log_directory "$1"
+    check_logrotate_config
+    find_large_logs "$1"
+}
+
+main "$@"
