@@ -28,6 +28,9 @@ The toolkit currently includes the following utilities:
   
 - memory-check
   Displays system memory (RAM and swap) usage, supports alerts for low memory, and includes live   monitoring mode.
+
+- failed-logins
+  Detects failed SSH login attempts, identifies top attacking IPs, and helps analyze potential attacks.
   
 # Installation
 
