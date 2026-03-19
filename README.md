@@ -22,6 +22,13 @@ The toolkit currently includes the following utilities:
 - service-watch
   Monitors systemd services and logs failures if a service stops.
 
+- process-monitor
+  Monitors running processes by CPU and memory usage, including filtering, top processes, and
+  live watch mode.
+  
+- memory-check
+  Displays system memory (RAM and swap) usage, supports alerts for low memory, and includes live   monitoring mode.
+  
 # Installation
 
 Clone the repository:
