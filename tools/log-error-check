@@ -1,0 +1,92 @@
+#!/bin/bash
+
+# log-error-check
+# Analyze logs for errors
+
+check_dependencies() {
+
+    for cmd in grep awk sort uniq wc tail; do
+        if ! command -v "$cmd" >/dev/null 2>&1; then
+            echo "ERROR: $cmd not found"
+            exit 1
+        fi
+    done
+
+}
+
+validate_arguments() {
+
+    if [ -z "$1" ]; then
+        echo "Usage: log-error-check <log_file>"
+        exit 1
+    fi
+
+}
+
+get_log_file() {
+
+    LOG_FILE="$1"
+
+    if [ ! -f "$LOG_FILE" ]; then
+        echo "ERROR: Log file not found: $LOG_FILE"
+        exit 1
+    fi
+
+}
+
+search_errors() {
+
+    grep -Ei "error|fail|critical" "$LOG_FILE"
+
+}
+
+show_recent_errors() {
+
+    echo "RECENT ERRORS"
+    echo "--------------------------------"
+
+    errors=$(search_errors)
+
+    if [ -z "$errors" ]; then
+        echo "No errors found"
+    else
+        echo "$errors" | tail -n 10
+    fi
+
+}
+
+count_errors() {
+
+    echo ""
+    echo "TOTAL ERRORS"
+    echo "--------------------------------"
+
+    search_errors | wc -l
+
+}
+
+show_top_errors() {
+
+    echo ""
+    echo "TOP ERROR MESSAGES"
+    echo "--------------------------------"
+
+    search_errors \
+        | awk '{$1=$2=$3=""; print $0}' \
+        | sort | uniq -c | sort -nr | head -n 5
+
+}
+
+main() {
+
+    validate_arguments "$@"
+    check_dependencies
+    get_log_file "$1"
+
+    show_recent_errors
+    count_errors
+    show_top_errors
+
+}
+
+main "$@"
